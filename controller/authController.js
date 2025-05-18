@@ -1,0 +1,147 @@
+const { check, validationResult } = require("express-validator");
+const bcrypt = require('bcrypt');
+const User = require("../models/user");
+
+const getLogin = (req,res,next) =>{
+    try{
+        res.status(200).render('users/Login',{title:'login'});
+    }catch(error){
+        res.status(500).json({msg : error.message});
+    }
+}
+
+const getSignUp = (req,res,next) =>{
+    try{
+        res.status(200).render('users/SignUp',{
+            title:'login',
+            errorMessage : [],
+            oldOutput : {}
+        });
+    }catch(error){
+        res.status(500).json({msg : error.message});
+    }
+}
+
+const postSignUp = [ 
+    check('username')
+    .trim()
+    .notEmpty()
+    .withMessage('username Is Required..')
+    .isLength({min:3})
+    .withMessage('username minimun 3 character and maximun 10 characters allowed')
+    .matches(/[a-z]/)
+    .withMessage("username only contains lowercase character")
+    .matches(/[!@#$%^&*()_]/)
+    .withMessage("username must contain atleast on Special case character"),
+
+    check('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please Enter Valid Email Address')
+    .normalizeEmail(),
+
+    check('password')
+    .trim()
+    .isLength({min:8})
+    .withMessage('password must contain minimun 8 character')
+    .matches(/[a-z]/)
+    .withMessage("Password must contain atleast on lowercase character")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain atleast on Uppercase character")
+    .matches(/[!@#$%^&*.,?|<>|{}:]/)
+    .withMessage("Password must contain atleast on Special case character"),
+
+    check('confirmPassword')
+    .trim()
+    .custom((value,{req})=>{
+        if(value !== req.body.password){
+            throw new Error('Password and confirm password Must Same');
+        }
+        return true;
+    })
+    ,(req,res,next) =>{
+    try{
+        const {username,email,password,confirmPassword} = req.body;
+        const errors = validationResult(req);
+        if(!errors.isEmpty()){
+            return res.status(422).render('users/SignUp',{
+                title:'SignUp',
+                errorMessage : errors.array().map(error => error.msg),
+                oldOutput : {username,email,password,confirmPassword}
+            });
+        }
+
+        bcrypt.hash(password,12).then(hashedpassword =>{
+            const user = User({username,email,password:hashedpassword});
+                user.save().then().catch(err =>{
+                    return res.status(422).render('users/SignUp',{
+                    title:'SignUp',
+                    errorMessage : errors.array().map(error => error.msg),
+                    oldOutput : {username,email,password,confirmPassword}
+                });
+            });
+            res.redirect('/Login');
+        });
+    }catch(error){
+        res.status(500).json({msg : error.message});
+    }
+}];
+
+const postLogin = [
+
+    check('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please Enter Valid Email Address')
+    .normalizeEmail(),
+
+    check('password')
+    .trim()
+    .isLength({min:8})
+    .withMessage('password must contain minimun 8 character')
+    .matches(/[a-z]/)
+    .withMessage("Password must contain atleast on lowercase character")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain atleast on Uppercase character")
+    .matches(/[!@#$%^&*.,?|<>|{}:]/)
+    .withMessage("Password must contain atleast on Special case character")
+    
+    ,async (req,res,next) =>{
+        const {email,password} = req.body;
+        const errors = validationResult(req);
+
+        if(!errors.isEmpty()){
+            return res.status(422).render('users/Login',{
+                title:'Login',
+                errorMessage : errors.array().map(error => error.msg),
+                oldOutput : {email,password}
+            });
+        }
+        
+        const user = await User.findOne({email : email});
+        if(!user){
+            return res.status(422).render('users/Login',{
+                title:'Login',
+                errorMessage : ['invalid credentials'],
+                oldOutput : {email,password}
+            });
+        }
+
+        const isMatch = await bcrypt.compare(password,user.password);
+
+        if(!isMatch){
+            return res.status(422).render('users/Login',{
+                title:'Login',
+                errorMessage : ['invalid credentials'],
+                oldOutput : {email,password}
+            });
+        }
+        res.redirect("/");
+}];
+
+module.exports = {
+    getLogin,
+    getSignUp,
+    postSignUp,
+    postLogin
+}

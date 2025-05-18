@@ -1,0 +1,53 @@
+<%- include('./partials/head') %>
+<body>
+  <div class="login-container">
+    <% if(typeof errorMessage !== 'undefined' && errorMessage.length > 0){ %>
+      <div class="error-box">
+        <ul>
+          <% errorMessage.forEach(msg =>{ %>
+            <li><%= msg %></li>
+          <% })%>
+        </ul>
+      </div>
+    <% } %>
+    <h1 class="blognest-logo-text">BlogNest</h1>
+    <form class="login-form" action="/Login" method="POST">
+      <h2>Welcome Back</h2>
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" value="<%= typeof oldOutput !== 'undefined' ? oldOutput.email : '' %>" required autocomplete="email" />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" name="password" id="password" value="<%= typeof oldOutput !== 'undefined' ? oldOutput.password : '' %>" required autocomplete="current-password" />
+          <span class="toggle-password" style="cursor:pointer;">🙈</span>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn">Login</button>
+      <p class="redirect-text">Don't have an account? <a href="/SignUp">Sign up</a></p>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const togglePassword = document.querySelector('.toggle-password');
+      const passwordInput = document.getElementById('password');
+
+      togglePassword.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type');
+
+        if (type === 'password') {
+          passwordInput.setAttribute('type', 'text');
+          togglePassword.textContent = '👀';  // eye open
+        } else {
+          passwordInput.setAttribute('type', 'password');
+          togglePassword.textContent = '🙈';  // eye closed
+        }
+      });
+    });
+  </script>
+</body>
+</html>
