@@ -11,9 +11,18 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "connect-mongodb-session": "^5.0.0",
+    "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.0",
     "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7"
   }
 }

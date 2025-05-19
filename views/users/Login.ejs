@@ -14,8 +14,8 @@
     <form class="login-form" action="/Login" method="POST">
       <h2>Welcome Back</h2>
       <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" value="<%= typeof oldOutput !== 'undefined' ? oldOutput.email : '' %>" required autocomplete="email" />
+        <label for="email">Username</label>
+        <input type="text" name="username" id="email" value="<%= typeof oldOutput !== 'undefined' ? oldOutput.username : '' %>" required autocomplete="username" />
       </div>
 
       <div class="input-group">
