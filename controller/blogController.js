@@ -47,7 +47,7 @@ const getUserBlogs = async(req,res,next) =>{
 
 const getBlog = async(req,res,next) =>{
     try{
-        const blog = await Post.find().sort({_id : -1});
+        const blog = await Post.find().populate('author','username').sort({_id : -1});
         res.render('users/home',{
             title : 'Home',
             user : req.session.user,
@@ -59,9 +59,28 @@ const getBlog = async(req,res,next) =>{
     }
 }
 
+const deleteBlog = async(req,res,next)=>{
+    try{
+        const blogId = req.body.id;
+        Post.findByIdAndDelete(blogId)
+        .then((result) => {
+            console.log("Deleted blog:", result);
+            res.redirect('/userBlogs');
+        })
+        .catch((error) => {
+            console.error("Error deleting blog:", error);
+            res.status(500).render("errors",{title : 'Errors'});
+        });
+    }catch(error){
+        console.log("Error:", error);
+        res.status(500).render("errors",{title : 'Errors'});
+    }
+}
+
 module.exports = {
     getCreateBlog,
     postCreateBlog,
     getUserBlogs,
-    getBlog
+    getBlog,
+    deleteBlog
 }

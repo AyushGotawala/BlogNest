@@ -57,9 +57,9 @@
                   <a href="/blog/edit/<%= blog._id %>" class="edit-btn">
                     <i class="fas fa-edit"></i>
                   </a>
-                  <button class="delete-btn" data-blog-id="<%= blog._id %>">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                    <button class="delete-btn" data-blog-id="<%= blog._id %>">
+                      <i class="fas fa-trash"></i>
+                    </button>
                 </div>
               </div>
             </div>
@@ -78,25 +78,32 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Delete blog functionality
-      const deleteButtons = document.querySelectorAll('.delete-btn');
-      deleteButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-          if (confirm('Are you sure you want to delete this blog?')) {
-            const blogId = button.dataset.blogId;
-            try {
-              const response = await fetch(`/blog/delete/${blogId}`, {
-                method: 'DELETE'
-              });
-              if (response.ok) {
-                button.closest('.blog-card').remove();
-              }
-            } catch (error) {
-              console.error('Error:', error);
-            }
-          }
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this blog?')) {
+                    const blogId = button.dataset.blogId;
+                    try {
+                        const response = await fetch('/deleteBlog', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ id: blogId })
+                        });
+                        
+                        if (response.ok) {
+                            button.closest('.blog-card').remove();
+                        } else {
+                            throw new Error('Failed to delete blog');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to delete blog post');
+                    }
+                }
+            });
         });
-      });
     });
   </script>
 </body>
