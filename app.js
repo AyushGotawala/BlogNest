@@ -5,6 +5,9 @@ const port = 3000;
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
+const multer = require("multer");
+const fs = require("fs");
+
 db_path = "mongodb://localhost:27017/BlogNest";
 app.set('view engine','ejs');
 app.set('views','views');
@@ -30,7 +33,28 @@ app.use(session({
 
 app.use(express.urlencoded({extended : true}));
 app.use(express.json());
-app.use(express.static(path.join(routePath,'public')));
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Create uploads directory if it doesn't exist
+        const uploadPath = 'public/uploads';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const fname = file.originalname.split('.')[0];
+        cb(null, fname + '-' + Date.now() + ext);
+    }
+});
+
+const uploads = multer({ storage });
+app.use(uploads.single('image'));
+
+// Serve static files - Update these lines
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(authRouter);
 app.use((req,res,next)=>{
     req.isLoggedIn = req.session.isLoggedIn;

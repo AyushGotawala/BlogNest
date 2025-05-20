@@ -1,11 +1,67 @@
+const Post = require('../models/Post');const user = require('../models/user');
+;
+
 const getCreateBlog = (req,res,next) =>{
     try {
         res.status(200).render('users/createBlog',{title:'createBlog',user:req.session.user});
     } catch (error) {
-        console.log("Error : ",error);
+        console.log("Error:", error);
+        res.status(500).render("errors",{title : 'Errors'});
+    }
+}
+
+const postCreateBlog = async(req,res,next) =>{
+    try{
+        const {title,content} = req.body;
+        const {tags} = req.body;
+        const img = req.file.path;
+        const user = req.session.user;
+
+        let tag = tags.split(',');
+        tag = tag.map((tg) => tg.trim());
+
+        const blog = new Post({
+            title : title,
+            content : content,
+            author : user._id,
+            tags : tag,
+            Image : img
+        });
+        await blog.save();
+        res.redirect('/home');
+    }catch(error){
+        console.log("Error:", error);
+        res.status(500).render("errors",{title : 'Errors'});
+    }
+}
+
+const getUserBlogs = async(req,res,next) =>{
+    try{
+        const blogs = await Post.find({author : req.session.user._id}).sort({createdAt : -1});
+        res.status(200).render('users/blogs',{title : 'Blogs',user : req.session.user,blogs : blogs});
+    }catch(error){
+        console.log("Error:", error);
+        res.status(500).render("errors",{title : 'Errors'});
+    }
+}
+
+const getBlog = async(req,res,next) =>{
+    try{
+        const blog = await Post.find().sort({_id : -1});
+        res.render('users/home',{
+            title : 'Home',
+            user : req.session.user,
+            posts : blog
+        });
+    }catch(error){
+        console.log("Error:", error);
+        res.status(500).render("errors",{title : 'Errors'});
     }
 }
 
 module.exports = {
     getCreateBlog,
+    postCreateBlog,
+    getUserBlogs,
+    getBlog
 }

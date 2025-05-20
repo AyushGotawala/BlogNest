@@ -6,20 +6,172 @@
     <div class="hero-content">
       <h1>Welcome to <span class="highlight">BlogNest</span></h1>
       <p>Discover powerful stories, personal thoughts, and creative ideas from writers around the world.</p>
-      <a href="/createBlog" class="cta-btn">Start Writing</a>
     </div>
   </section>
 
   <section class="blogs-section">
     <h2 class="section-title" data-aos="fade-up">Latest Posts</h2>
     <div class="blogs-grid">
-        <div class="blog-card" data-aos="fade-up">
-          <h3>title</h3>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium atque iure quam dignissimos necessitatibus odit in neque quasi, animi nulla eius iusto vero placeat eligendi dicta nam optio beatae sequi.</p>
-          <p class="blog-meta">By Ayush | 10 july 2024</p>
-          <a href="#" class="read-more">Read More →</a>
+      <% if (posts && posts.length > 0) { %>
+        <% posts.forEach(post => { %>
+          <article class="blog-card" data-aos="fade-up">
+            <div class="blog-image">
+              <img 
+                src="<%= post.Image ? post.Image.replace('public/', '') : '/images/default-blog.jpg' %>" 
+                alt="<%= post.title %>"
+                onerror="this.src='/images/default-blog.jpg'"
+              >
+            </div>
+            <div class="blog-content">
+              <h2><%= post.title %></h2>
+              <p><%= post.content.substring(0, 150) %>...</p>
+              
+              <div class="blog-meta">
+                <div class="author-date">
+                  <span class="author">
+                    <i class="fas fa-user"></i>
+                    <%= post.author.username %>
+                  </span>
+                  <span class="date">
+                    <i class="far fa-calendar"></i>
+                    <%= new Date(post._id.getTimestamp()).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }) %>
+                  </span>
+                </div>
+              </div>
+
+              <% if(post.tags && post.tags.length > 0) { %>
+                <div class="tags">
+                  <% post.tags.forEach(tag => { %>
+                    <span class="tag"><%= tag %></span>
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <div class="blog-interactions">
+                <button class="like-btn <%= post.likes.includes(user._id) ? 'liked' : '' %>" 
+                        data-post-id="<%= post._id %>">
+                  <i class="<%= post.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
+                  <span class="like-count"><%= post.likes.length %></span>
+                </button>
+                
+                <button class="comment-btn" data-post-id="<%= post._id %>">
+                  <i class="far fa-comment"></i>
+                  <span class="comment-count"><%= post.comments.length %></span>
+                </button>
+              </div>
+
+              <!-- Comments Section -->
+              <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
+                <div class="comments-list">
+                  <% post.comments.forEach(comment => { %>
+                    <div class="comment">
+                      <strong><%= comment.user.username %></strong>
+                      <p><%= comment.comment %></p>
+                      <small><%= new Date(comment.date).toLocaleDateString() %></small>
+                    </div>
+                  <% }) %>
+                </div>
+                <form class="comment-form" data-post-id="<%= post._id %>">
+                  <input type="text" placeholder="Add a comment..." required>
+                  <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+              </div>
+
+              <a href="/blog/<%= post._id %>" class="read-more">
+                Read More <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </article>
+        <% }) %>
+      <% } else { %>
+        <div class="no-blogs" data-aos="fade-up">
+          <i class="fas fa-book-reader"></i>
+          <h2>No posts yet</h2>
+          <p>Check back later for new stories!</p>
         </div>
+      <% } %>
     </div>
   </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Like functionality
+      const likeButtons = document.querySelectorAll('.like-btn');
+      likeButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+          const postId = button.dataset.postId;
+          try {
+            const response = await fetch(`/blog/like/${postId}`, {
+              method: 'POST'
+            });
+            if (response.ok) {
+              const data = await response.json();
+              const likeIcon = button.querySelector('i');
+              const likeCount = button.querySelector('.like-count');
+              
+              likeIcon.className = data.liked ? 'fas fa-heart' : 'far fa-heart';
+              likeCount.textContent = data.likesCount;
+              button.classList.toggle('liked', data.liked);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        });
+      });
+
+      // Comment functionality
+      const commentButtons = document.querySelectorAll('.comment-btn');
+      commentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const postId = button.dataset.postId;
+          const commentsSection = document.getElementById(`comments-${postId}`);
+          commentsSection.style.display = commentsSection.style.display === 'none' ? 'block' : 'none';
+        });
+      });
+
+      // Comment form submission
+      const commentForms = document.querySelectorAll('.comment-form');
+      commentForms.forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const postId = form.dataset.postId;
+          const input = form.querySelector('input');
+          const comment = input.value.trim();
+
+          if (comment) {
+            try {
+              const response = await fetch(`/blog/comment/${postId}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ comment })
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                const commentsList = form.previousElementSibling;
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.innerHTML = `
+                  <strong>${data.username}</strong>
+                  <p>${data.comment}</p>
+                  <small>${new Date().toLocaleDateString()}</small>
+                `;
+                commentsList.appendChild(newComment);
+                input.value = '';
+              }
+            } catch (error) {
+              console.error('Error:', error);
+            }
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
