@@ -142,7 +142,7 @@ const postLogin = [
             return res.status(422).render('users/Login',{
                 title:'Login',
                 errorMessage : errors.array().map(error => error.msg),
-                oldOutput : {email,password}
+                oldOutput : {username,password}
             });
         }
         
@@ -151,7 +151,7 @@ const postLogin = [
             return res.status(422).render('users/Login',{
                 title:'Login',
                 errorMessage : ['username not Found!,invalid credentials'],
-                oldOutput : {email,password}
+                oldOutput : {username,password}
             });
         }
 
@@ -161,7 +161,7 @@ const postLogin = [
             return res.status(422).render('users/Login',{
                 title:'Login',
                 errorMessage : ['invalid credentials'],
-                oldOutput : {email,password}
+                oldOutput : {username,password}
             });
         }
         

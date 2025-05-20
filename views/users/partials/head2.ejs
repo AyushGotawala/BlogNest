@@ -18,18 +18,26 @@
   <script defer src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <script defer>
     document.addEventListener("DOMContentLoaded", () => {
+      // Initialize AOS
       AOS.init({ 
         duration: 800,
         once: true,
         offset: 100
       });
 
-      const menuToggle = document.getElementById('menuToggle');
-      const navLinks = document.getElementById('navLinks');
+      // Mobile menu toggle
+      const menuToggle = document.querySelector('.hamburger');
+      const navLinks = document.querySelector('.nav-links');
 
-      menuToggle?.addEventListener('click', () => {
-        navLinks?.classList.toggle('active');
-      });
+      if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+          navLinks.classList.toggle('active');
+          // Toggle icon between bars and times
+          const icon = menuToggle.querySelector('i');
+          icon.classList.toggle('fa-bars');
+          icon.classList.toggle('fa-times');
+        });
+      }
     });
   </script>
 </head>

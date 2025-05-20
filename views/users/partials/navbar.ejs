@@ -2,16 +2,14 @@
   <div class="nav-container">
     <a href="/home" class="logo">BlogNest</a>
     
-    <div id="menuToggle" class="hamburger">
+    <button class="hamburger" aria-label="Toggle menu">
       <i class="fas fa-bars"></i>
-    </div>
+    </button>
 
     <ul class="nav-links" id="navLinks">
       <li><a href="/home">Home</a></li>
       <li><a href="#">Blogs</a></li>
       <li><a href="/createBlog">Write</a></li>
-      <!-- <li><a href="/Login">Login</a></li>
-      <li><a href="/SignUp">Sign Up</a></li> -->
       <li class="welcome">Hi, <%= user.username %></li>
       <li><a href="/Logout">Logout</a></li>
     </ul>
