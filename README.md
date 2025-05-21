@@ -41,21 +41,24 @@
 
 
 ### 2. Install Dependencies
-  npm install
+```bash
+npm install
+```
 
 ### 3. Setup Environment Variables
   Create a .env file in the root directory:
 ```bash
-    PORT=3000
-    MONGO_URI=your_mongodb_connection_string
-    SESSION_SECRET=your_session_secret
+PORT=3000
+MONGO_URI=your_mongodb_connection_string
+SESSION_SECRET=your_session_secret
 ```
 
 ### 4. Run the App
 ```bash
-      npm start
-      Open your browser and go to: http://localhost:3000
+npm start
 ```
+Open your browser and go to: http://localhost:3000
+
 
 ### 📌 Upcoming Features
      Blog Editing & Deletion
