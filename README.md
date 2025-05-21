@@ -9,6 +9,7 @@
 - ✅ User Signup & Login with secure password hashing (bcrypt)
 - ✅ Session-based Authentication
 - ✅ Create and view blog posts
+- ✅ Edit and Delete blog posts
 - ✅ Dashboard to view user-specific blogs
 - ✅ Clean and modern UI (EJS + CSS)
 - ✅ Responsive design with animations (AOS.js)
@@ -61,8 +62,6 @@ Open your browser and go to: http://localhost:3000
 
 
 ### 📌 Upcoming Features
-     Blog Editing & Deletion
-    
      Comments System
     
      RESTful API endpoints
