@@ -37,6 +37,7 @@
 ```bash
   git clone https://github.com/AyushGotawala/BlogNest.git
   cd BlogNest
+```
 
 
 ### 2. Install Dependencies
