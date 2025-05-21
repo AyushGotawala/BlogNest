@@ -1,12 +1,10 @@
 <%- include('./partials/head2') %>
 <%- include('./partials/navbar') %>
+
 <body>
   <div class="blogs-container">
     <header class="blogs-header" data-aos="fade-up">
       <h1>Your Blog Posts</h1>
-      <!-- <a href="/createBlog" class="new-blog-btn">
-        <i class="fas fa-plus"></i> New Blog
-      </a> -->
     </header>
 
     <div class="blogs-grid" data-aos="fade-up">
@@ -50,16 +48,18 @@
               <% } %>
 
               <div class="blog-actions">
-                <a href="/blog/<%= blog._id %>" class="read-more">
+                <!-- Safe and valid blog view link -->
+                <a href="/blog/<%= blog._id.toString() %>" class="read-more">
                   Read More <i class="fas fa-arrow-right"></i>
                 </a>
+
                 <div class="action-buttons">
-                  <a href="/blog/edit/<%= blog._id %>" class="edit-btn">
-                    <i class="fas fa-edit"></i>
-                  </a>
-                    <button class="delete-btn" data-blog-id="<%= blog._id %>">
-                      <i class="fas fa-trash"></i>
-                    </button>
+                    <a href="/updateBlog/<%= blog._id %>" class="edit-btn">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                  <button class="delete-btn" data-blog-id="<%= blog._id.toString() %>">
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
               </div>
             </div>

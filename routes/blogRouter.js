@@ -7,5 +7,7 @@ blogRouter.post("/createBlog",blogController.postCreateBlog);
 blogRouter.get("/userBlogs",blogController.getUserBlogs);
 blogRouter.get("/home",blogController.getBlog);
 blogRouter.post("/deleteBlog",blogController.deleteBlog);
+blogRouter.get("/updateBlog/:_id",blogController.getUpdateBlog);
+blogRouter.post("/updateBlog",blogController.postUpdateBlog);
 
 module.exports = blogRouter;

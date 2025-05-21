@@ -1,0 +1,41 @@
+<%- include('./partials/head2') %>
+<%- include('./partials/navbar') %>
+
+<body>
+  <div class="container blog-create" data-aos="fade-up">
+    <h1><%= blog !== null ? 'Edit ' : 'Create a New ' %>Blog Post</h1>
+    <form action="<%= editing !== true ? '/createBlog' : '/updateBlog' %>" method="POST" enctype="multipart/form-data" class="blog-form">
+      <div class="form-group">
+        <label for="title">Title <span>*</span></label>
+        <input type="text" id="title" name="title" value="<%= blog !== null ? blog.title : '' %>" required>
+        <% if(blog !== null) { %>
+          <input type="hidden" name="blogId" value="<%= blog._id %>" hidden>
+        <% } %>
+      </div>
+
+      <div class="form-group">
+        <label for="content">Content <span>*</span></label>
+        <textarea id="content" name="content" rows="8" required><%= blog !== null ? blog.content : '' %></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags (comma separated)</label>
+        <input type="text" id="tags" name="tags" value="<%= blog !== null ? blog.tags : '' %>" placeholder="e.g. travel, food" required>
+      </div>
+
+      <div class="form-group">
+        <label for="image">
+          Upload Image <% if(editing !== true) { %>
+              <span>*</span>
+        <% }else { %>
+          (Optional)
+        <% } %>
+        </label>
+        <input type="file" id="image" name="image" <%= blog !== null ? '' : 'required' %> >
+      </div>
+
+      <button type="submit"><%= blog !== null ? 'Edit & ' : '' %>Publish</button>
+    </form>
+  </div>
+</body>
+</html>
