@@ -63,6 +63,10 @@ Open your browser and go to: http://localhost:3000
 
 
 ### 📌 Upcoming Features
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5ba6f10c97092280da4aee75ee10c048c95ec391
      RESTful API endpoints
     
      Likes/Reactions on Blogs
@@ -77,4 +81,8 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 
 🙋‍♂️ Author
+<<<<<<< HEAD
 Made by Ayush Gotawala
+=======
+Made by Ayush Gotawala
+>>>>>>> 5ba6f10c97092280da4aee75ee10c048c95ec391
