@@ -1,22 +1,20 @@
-const { text } = require("express");
 const mongoose = require("mongoose");
-const { comment } = require("postcss");
 
 const postSchema = mongoose.Schema({
     title : {
         type : String,
-        require : true,
+        required : true,
         maxLength : 100
     },
     content : {
         type : String,
-        require : true,
+        required : true,
         minlength : 10
     },
     author :{
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User',
-        require : true
+        required : true
     },
     tags : {
         type : [String],

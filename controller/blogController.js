@@ -52,7 +52,10 @@ const getUserBlogs = async(req,res,next) =>{
 
 const getBlog = async(req,res,next) =>{
     try{
-        const blog = await Post.find().populate('author','username').sort({_id : -1});
+        const blog = await Post.find()
+        .populate('author','username')
+        .populate('comments.user','username')
+        .sort({_id : -1});
         res.render('users/home',{
             title : 'Home',
             user : req.session.user,
@@ -133,6 +136,130 @@ const postUpdateBlog = async (req, res, next) => {
     }
 }
 
+const addComment = async(req,res,next) =>{
+    try {
+        const {postId} = req.params;
+        const {comment} = req.body;
+        const userId = req.session.user._id;
+
+        const post = await Post.findById(postId);
+        if(!post){
+            return res.status(404).json({
+                success: false,
+                message: "Post Not Found"
+            });
+        }
+
+        const newComment = {
+            user: userId,
+            comment: comment,
+            date: new Date()
+        };
+
+        post.comments.push(newComment);
+        await post.save();
+
+        // Get the newly added comment's ID
+        const latestComment = post.comments[post.comments.length - 1];
+
+        res.status(200).json({
+            success: true,
+            commentId: latestComment._id, // Send the comment ID
+            username: req.session.user.username,
+            comment: comment,
+            date: newComment.date
+        });
+
+    } catch (error) {
+        console.error("Error in addComment:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Error adding comment"
+        });
+    }
+}
+
+const deleteComment = async(req,res,next) => {
+    try {
+        const { postId, commentId } = req.params;
+        const userId = req.session.user._id;
+
+        const post = await Post.findById(postId);
+        if(!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+
+        // Find comment index
+        const commentIndex = post.comments.findIndex(
+            comment => comment._id.toString() === commentId && 
+            comment.user.toString() === userId.toString()
+        );
+
+        if(commentIndex === -1) {
+            return res.status(403).json({
+                success: false,
+                message: "Comment not found or unauthorized"
+            });
+        }
+
+        // Remove the comment
+        post.comments.splice(commentIndex, 1);
+        await post.save();
+
+        res.status(200).json({ 
+            success: true,
+            message: "Comment deleted successfully"
+        });
+
+    } catch(error) {
+        console.error("Error in deleteComment:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error deleting comment"
+        });
+    }
+};
+
+const getReadMore = async(req,res,next) => {
+    try {
+        const { blogId } = req.params;
+        
+        if (!mongoose.isValidObjectId(blogId)) {
+            return res.status(400).render("errors", { 
+                title: "Error",
+                message: "Invalid blog ID" 
+            });
+        }
+
+        const blog = await Post.findById(blogId)
+            .populate('author', 'username')
+            .populate('comments.user', 'username')
+            .populate('likes', 'username');
+
+        if (!blog) {
+            return res.status(404).render("errors", { 
+                title: "Error",
+                message: "Blog not found" 
+            });
+        }
+
+        res.render('users/readMore', {
+            title: blog.title,
+            user: req.session.user,
+            blog: blog
+        });
+
+    } catch (error) {
+        console.error("Error in getReadMore:", error);
+        res.status(500).render("errors", { 
+            title: "Error",
+            message: "Internal server error" 
+        });
+    }
+};
 
 module.exports = {
     getCreateBlog,
@@ -141,5 +268,8 @@ module.exports = {
     getBlog,
     deleteBlog,
     getUpdateBlog,
-    postUpdateBlog
+    postUpdateBlog,
+    addComment,
+    deleteComment,
+    getReadMore,
 }

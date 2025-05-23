@@ -52,6 +52,9 @@
               <% } %>
 
               <div class="blog-interactions">
+                <a href="/readMore/<%= post._id.toString() %>" class="read-more">
+                  Read More <i class="fas fa-arrow-right"></i>
+                </a>
                 <button class="like-btn <%= post.likes.includes(user._id) ? 'liked' : '' %>" 
                         data-post-id="<%= post._id %>">
                   <i class="<%= post.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
@@ -69,21 +72,24 @@
                 <div class="comments-list">
                   <% post.comments.forEach(comment => { %>
                     <div class="comment">
-                      <strong><%= comment.user.username %></strong>
+                      <div class="comment-header">
+                        <strong><%= comment.user && comment.user.username ? comment.user.username : 'Anonymous' %></strong>
+                        <% if (user._id.toString() === comment.user._id.toString()) { %>
+                          <button class="delete-comment" data-comment-id="<%= comment._id %>">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        <% } %>
+                      </div>
                       <p><%= comment.comment %></p>
                       <small><%= new Date(comment.date).toLocaleDateString() %></small>
                     </div>
                   <% }) %>
                 </div>
                 <form class="comment-form" data-post-id="<%= post._id %>">
-                  <input type="text" placeholder="Add a comment..." required>
+                  <input type="text" name="comment" placeholder="Add a comment..." required>
                   <button type="submit"><i class="fas fa-paper-plane"></i></button>
                 </form>
               </div>
-
-              <a href="/blog/<%= post._id %>" class="read-more">
-                Read More <i class="fas fa-arrow-right"></i>
-              </a>
             </div>
           </article>
         <% }) %>
@@ -135,41 +141,108 @@
 
       // Comment form submission
       const commentForms = document.querySelectorAll('.comment-form');
-      commentForms.forEach(form => {
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const postId = form.dataset.postId;
-          const input = form.querySelector('input');
-          const comment = input.value.trim();
-
-          if (comment) {
+commentForms.forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const postId = form.dataset.postId;
+        const input = form.querySelector('input[name="comment"]');
+        const comment = input.value.trim();
+        
+        if (comment) {
             try {
-              const response = await fetch(`/blog/comment/${postId}`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ comment })
-              });
+                const response = await fetch(`/blog/comment/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comment })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
 
-              if (response.ok) {
                 const data = await response.json();
-                const commentsList = form.previousElementSibling;
-                const newComment = document.createElement('div');
-                newComment.className = 'comment';
-                newComment.innerHTML = `
-                  <strong>${data.username}</strong>
-                  <p>${data.comment}</p>
-                  <small>${new Date().toLocaleDateString()}</small>
-                `;
-                commentsList.appendChild(newComment);
-                input.value = '';
-              }
+
+                if (data.success) {
+                    const commentsList = document.querySelector(`#comments-${postId} .comments-list`);
+                    
+                    // Since this is the current user's comment, we always show the delete button
+                    const deleteButton = `
+                        <button class="delete-comment" data-comment-id="${data.commentId}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment';
+                    newComment.innerHTML = `
+                        <div class="comment-header">
+                            <strong>${data.username}</strong>
+                            ${deleteButton}
+                        </div>
+                        <p>${data.comment}</p>
+                        <small>${new Date(data.date).toLocaleDateString()}</small>
+                    `;
+                    
+                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                    input.value = '';
+                    
+                    // Update comment count
+                    const commentCount = form.closest('.blog-card')
+                        .querySelector('.comment-btn .comment-count');
+                    const currentCount = parseInt(commentCount.textContent || '0');
+                    commentCount.textContent = currentCount + 1;
+                    
+                    // Show comments section
+                    const commentsSection = document.getElementById(`comments-${postId}`);
+                    commentsSection.style.display = 'block';
+                } else {
+                    throw new Error(data.message || 'Failed to add comment');
+                }
             } catch (error) {
-              console.error('Error:', error);
+                console.error('Error:', error);
+                alert(error.message || 'Failed to add comment. Please try again.');
             }
+        }
+    });
+});
+      // delete comment functionality
+      document.addEventListener('click', async (e) => {
+          if (e.target.closest('.delete-comment')) {
+              const button = e.target.closest('.delete-comment');
+              const commentElement = button.closest('.comment');
+              const commentsSection = commentElement.closest('.comments-section');
+              const postId = commentsSection.id.split('-')[1];
+              const commentId = button.dataset.commentId;
+
+              try {
+                  const response = await fetch(`/blog/comment/${postId}/${commentId}`, {
+                      method: 'DELETE'
+                  });
+
+                  if (response.ok) {
+                      const data = await response.json();
+                      if (data.success) {
+                          // Remove the comment element
+                          commentElement.remove();
+                          
+                          // Find the blog-card parent and update comment count
+                          const blogCard = commentsSection.closest('.blog-card');
+                          const commentCountElement = blogCard.querySelector('.comment-btn .comment-count');
+                          const currentCount = parseInt(commentCountElement.textContent);
+                          commentCountElement.textContent = currentCount - 1;
+                      } else {
+                          alert(data.message || 'Failed to delete comment');
+                      }
+                  } else {
+                      throw new Error('Failed to delete comment');
+                  }
+              } catch (error) {
+                  console.error('Error:', error);
+                  alert('Failed to delete comment. Please try again.');
+              }
           }
-        });
       });
     });
   </script>

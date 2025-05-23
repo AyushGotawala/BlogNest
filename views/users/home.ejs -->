@@ -1,0 +1,58 @@
+// Replace the existing comment form submission code
+const commentForms = document.querySelectorAll('.comment-form');
+commentForms.forEach(form => {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const postId = form.dataset.postId;
+        const input = form.querySelector('input[name="comment"]');
+        const comment = input.value.trim();
+
+        if (comment) {
+            try {
+                const response = await fetch(`/blog/comment/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ comment: comment })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Get the comments list for this specific post
+                    const commentsList = document.querySelector(`#comments-${postId} .comments-list`);
+                    
+                    // Create new comment element
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment';
+                    newComment.innerHTML = `
+                        <strong>${data.username}</strong>
+                        <p>${data.comment}</p>
+                        <small>${new Date(data.date).toLocaleDateString()}</small>
+                    `;
+                    
+                    // Add the new comment at the top
+                    commentsList.insertBefore(newComment, commentsList.firstChild);
+                    
+                    // Clear the input
+                    input.value = '';
+                    
+                    // Update comment count
+                    const commentCount = form.closest('.blog-card')
+                        .querySelector('.comment-count');
+                    const currentCount = parseInt(commentCount.textContent);
+                    commentCount.textContent = currentCount + 1;
+                    
+                    // Make sure comments section is visible
+                    const commentsSection = document.getElementById(`comments-${postId}`);
+                    commentsSection.style.display = 'block';
+                } else {
+                    console.error('Failed to add comment:', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    });
+});

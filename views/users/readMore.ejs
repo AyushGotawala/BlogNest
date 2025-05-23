@@ -1,0 +1,199 @@
+<%- include('./partials/head2') %>
+<%- include('./partials/navbar') %>
+
+<div class="read-more-container">
+    <article class="blog-full">
+        <div class="blog-header">
+            <h1><%= blog.title %></h1>
+            <div class="blog-meta">
+                <span class="author"><i class="fas fa-user"></i> By <%= blog.author.username %></span>
+                <span class="date"><i class="far fa-calendar-alt"></i> <%= new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                }) %></span>
+            </div>
+            <div class="tags">
+                <% blog.tags.forEach(tag => { %>
+                    <span class="tag"><%= tag %></span>
+                <% }) %>
+            </div>
+        </div>
+
+        <% if (blog.Image) { %>
+            <div class="blog-image-full">
+                <img src="/<%= blog.Image ? blog.Image.replace('public/', '') : '/images/default-blog.jpg' %>" alt="<%= blog.title %>">
+            </div>
+        <% } %>
+
+        <div class="blog-content-full">
+            <%= blog.content %>
+        </div>
+
+        <div class="blog-interactions">
+            <button class="like-btn" data-post-id="<%= blog._id %>" data-liked="<%= blog.likes.includes(user._id) %>">
+                <i class="<%= blog.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
+                <span class="like-count"><%= blog.likes.length %></span>
+            </button>
+            <button class="comment-btn" data-post-id="<%= blog._id %>">
+                <i class="far fa-comment"></i>
+                <span class="comment-count"><%= blog.comments.length %></span>
+            </button>
+        </div>
+
+        <div class="comments-section" id="comments-<%= blog._id %>">
+            <form class="comment-form" data-post-id="<%= blog._id %>">
+                <input type="text" name="comment" placeholder="Add a comment..." required>
+                <button type="submit"><i class="fas fa-paper-plane"></i></button>
+            </form>
+
+            <div class="comments-list">
+                <% blog.comments.forEach(comment => { %>
+                    <div class="comment">
+                        <div class="comment-header">
+                            <strong><%= comment.user.username %></strong>
+                            <% if (user._id.toString() === comment.user._id.toString()) { %>
+                                <button class="delete-comment" data-comment-id="<%= comment._id %>">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            <% } %>
+                        </div>
+                        <p><%= comment.comment %></p>
+                        <small><i class="far fa-clock"></i> <%= new Date(comment.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) %></small>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </article>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Like functionality
+    const likeBtn = document.querySelector('.like-btn');
+    if (likeBtn) {
+        likeBtn.addEventListener('click', async () => {
+            const postId = likeBtn.dataset.postId;
+            try {
+                const response = await fetch(`/blog/like/${postId}`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const likeIcon = likeBtn.querySelector('i');
+                    const likeCount = likeBtn.querySelector('.like-count');
+                    
+                    likeIcon.className = data.liked ? 'fas fa-heart' : 'far fa-heart';
+                    likeCount.textContent = data.likesCount;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // Comment form submission
+    const commentForm = document.querySelector('.comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const postId = commentForm.dataset.postId;
+            const input = commentForm.querySelector('input[name="comment"]');
+            const comment = input.value.trim();
+            
+            if (comment) {
+                try {
+                    const response = await fetch(`/blog/comment/${postId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ comment })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const commentsList = document.querySelector('.comments-list');
+                        
+                        const newComment = document.createElement('div');
+                        newComment.className = 'comment';
+                        newComment.innerHTML = `
+                            <div class="comment-header">
+                                <strong>${data.username}</strong>
+                                <button class="delete-comment" data-comment-id="${data.commentId}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <p>${data.comment}</p>
+                            <small><i class="far fa-clock"></i> ${new Date(data.date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</small>
+                        `;
+                        
+                        commentsList.insertBefore(newComment, commentsList.firstChild);
+                        input.value = '';
+                        
+                        // Update comment count
+                        const commentCount = document.querySelector('.comment-btn .comment-count');
+                        commentCount.textContent = parseInt(commentCount.textContent) + 1;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        });
+    }
+
+    // Delete comment functionality
+    document.addEventListener('click', async (e) => {
+        const deleteButton = e.target.closest('.delete-comment');
+        if (deleteButton) {
+            try {
+                const commentElement = deleteButton.closest('.comment');
+                const postId = document.querySelector('.comment-form').dataset.postId;
+                const commentId = deleteButton.dataset.commentId;
+
+                const response = await fetch(`/blog/comment/${postId}/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Remove the comment element with animation
+                    commentElement.style.transition = 'all 0.3s ease';
+                    commentElement.style.opacity = '0';
+                    commentElement.style.transform = 'translateX(-20px)';
+                    
+                    setTimeout(() => {
+                        commentElement.remove();
+                    }, 300);
+                    
+                    // Update comment count
+                    const commentCount = document.querySelector('.comment-btn .comment-count');
+                    const currentCount = parseInt(commentCount.textContent);
+                    commentCount.textContent = Math.max(0, currentCount - 1);
+                } else {
+                    throw new Error(data.message || 'Failed to delete comment');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete comment. Please try again.');
+            }
+        }
+    });
+});
+</script>
