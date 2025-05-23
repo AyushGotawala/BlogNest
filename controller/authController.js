@@ -17,7 +17,7 @@ const getSignUp = (req,res,next) =>{
         req.session.isLoggedIn = false;
         req.session.user = null;
         res.status(200).render('users/SignUp',{
-            title:'login',
+            title:'SignUp',
             errorMessage : [],
             oldOutput : {}
         });

@@ -13,6 +13,7 @@
 - ✅ Dashboard to view user-specific blogs
 - ✅ Clean and modern UI (EJS + CSS)
 - ✅ Responsive design with animations (AOS.js)
+- ✅ Comments System
 - 🔒 Auth-protected routes
 - 🛠️ Modular code structure with MVC pattern
 
@@ -62,8 +63,6 @@ Open your browser and go to: http://localhost:3000
 
 
 ### 📌 Upcoming Features
-     Comments System
-    
      RESTful API endpoints
     
      Likes/Reactions on Blogs
@@ -79,5 +78,3 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 🙋‍♂️ Author
 Made by Ayush Gotawala
-    
-
