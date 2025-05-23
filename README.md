@@ -63,8 +63,7 @@ Open your browser and go to: http://localhost:3000
 
 
 ### 📌 Upcoming Features
-     Comments System
-    
+
      RESTful API endpoints
     
      Likes/Reactions on Blogs
@@ -79,6 +78,7 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 
 🙋‍♂️ Author
+<<<<<<< HEAD
 Made by Ayush Gotawala
-    
-
+=======
+Made by Ayush Gotawala
