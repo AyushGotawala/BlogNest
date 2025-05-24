@@ -234,10 +234,10 @@ const getReadMore = async(req,res,next) => {
             });
         }
 
+        // Update: directly populate the likes array instead of using populate('likes')
         const blog = await Post.findById(blogId)
             .populate('author', 'username')
-            .populate('comments.user', 'username')
-            .populate('likes', 'username');
+            .populate('comments.user', 'username');
 
         if (!blog) {
             return res.status(404).render("errors", { 
@@ -246,10 +246,14 @@ const getReadMore = async(req,res,next) => {
             });
         }
 
+        // Check if the current user has liked the post
+        const userHasLiked = blog.likes.includes(req.session.user._id);
+
         res.render('users/readMore', {
             title: blog.title,
             user: req.session.user,
-            blog: blog
+            blog: blog,
+            userHasLiked: userHasLiked
         });
 
     } catch (error) {
@@ -260,6 +264,51 @@ const getReadMore = async(req,res,next) => {
         });
     }
 };
+
+const toggleLike = async(req,res,next) =>{
+    try {
+        const {postId} = req.params;
+        const userId = req.session.user._id;
+    
+        const post = await Post.findById(postId);
+        if(!post){
+            return res.status(404).json({
+                success: false,
+                message: "Post Not Found"
+            });
+        }
+
+        // Ensure likes array exists
+        if (!post.likes) {
+            post.likes = [];
+        }
+    
+        const likeIndex = post.likes.findIndex(id => id.toString() === userId.toString());
+        let liked = false;
+    
+        if(likeIndex === -1){
+            post.likes.push(userId);
+            liked = true;
+        } else {
+            post.likes.splice(likeIndex, 1);
+            liked = false;
+        }
+    
+        await post.save();
+        
+        return res.status(200).json({
+            success: true,
+            liked: liked,
+            likesCount: post.likes.length
+        });
+    } catch(error) {
+        console.error("Error in toggleLike:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error processing like"
+        });
+    }
+}
 
 module.exports = {
     getCreateBlog,
@@ -272,4 +321,5 @@ module.exports = {
     addComment,
     deleteComment,
     getReadMore,
+    toggleLike
 }

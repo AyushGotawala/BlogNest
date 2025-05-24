@@ -31,13 +31,18 @@
         </div>
 
         <div class="blog-interactions">
-            <button class="like-btn" data-post-id="<%= blog._id %>" data-liked="<%= blog.likes.includes(user._id) %>">
-                <i class="<%= blog.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
-                <span class="like-count"><%= blog.likes.length %></span>
+            <button class="like-btn" 
+                    data-post-id="<%= blog._id %>" 
+                    data-liked="<%= blog.likes && blog.likes.includes(user._id) %>"
+                    aria-label="Like post">
+                <i class="<%= blog.likes && blog.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
+                <span class="like-count"><%= blog.likes ? blog.likes.length : 0 %></span>
             </button>
-            <button class="comment-btn" data-post-id="<%= blog._id %>">
+            <button class="comment-btn" 
+                    data-post-id="<%= blog._id %>"
+                    aria-label="Show comments">
                 <i class="far fa-comment"></i>
-                <span class="comment-count"><%= blog.comments.length %></span>
+                <span class="comment-count"><%= blog.comments ? blog.comments.length : 0 %></span>
             </button>
         </div>
 
@@ -75,29 +80,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Like functionality
-    const likeBtn = document.querySelector('.like-btn');
-    if (likeBtn) {
-        likeBtn.addEventListener('click', async () => {
-            const postId = likeBtn.dataset.postId;
-            try {
-                const response = await fetch(`/blog/like/${postId}`, {
-                    method: 'POST'
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const likeIcon = likeBtn.querySelector('i');
-                    const likeCount = likeBtn.querySelector('.like-count');
-                    
-                    likeIcon.className = data.liked ? 'fas fa-heart' : 'far fa-heart';
-                    likeCount.textContent = data.likesCount;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        });
-    }
-
     // Comment form submission
     const commentForm = document.querySelector('.comment-form');
     if (commentForm) {
@@ -194,6 +176,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Failed to delete comment. Please try again.');
             }
         }
+    });
+
+    const likeButtons = document.querySelectorAll('.like-btn');
+    likeButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            try {
+                const postId = button.dataset.postId;
+                button.disabled = true; // Prevent double-clicks
+
+                const response = await fetch(`/blog/like/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const likeIcon = button.querySelector('i');
+                    const likeCount = button.querySelector('.like-count');
+                    
+                    // Update icon
+                    likeIcon.className = data.liked ? 'fas fa-heart' : 'far fa-heart';
+                    likeCount.textContent = data.likesCount;
+                    
+                    // Update button state and data attribute
+                    button.dataset.liked = data.liked;
+                    button.classList.toggle('liked', data.liked);
+                    
+                    // Add animation
+                    button.classList.add('animating');
+                    setTimeout(() => {
+                        button.classList.remove('animating');
+                    }, 300);
+                } else {
+                    throw new Error(data.message || 'Failed to process like');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to process like. Please try again.');
+            } finally {
+                button.disabled = false; // Re-enable the button
+            }
+        });
     });
 });
 </script>
