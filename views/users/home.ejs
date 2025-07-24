@@ -30,7 +30,7 @@
                 <div class="author-date">
                   <span class="author">
                     <i class="fas fa-user"></i>
-                    <%= post.author.username %> , 
+                    <%= post.author ? post.author.username : 'Unknown Author' %> , 
                   </span>
                   <span class="date">
                     <i class="far fa-calendar"></i>
@@ -52,18 +52,18 @@
               <% } %>
 
               <div class="blog-interactions">
-                <a href="/readMore/<%= post._id.toString() %>" class="read-more">
+                <a href="/blog/readMore/<%= post._id.toString() %>" class="read-more">
                   Read More <i class="fas fa-arrow-right"></i>
                 </a>
-                <button class="like-btn <%= post.likes.includes(user._id) ? 'liked' : '' %>" 
+                <button class="like-btn <%= post.likes && post.likes.includes(user._id) ? 'liked' : '' %>" 
                         data-post-id="<%= post._id %>">
-                  <i class="<%= post.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
-                  <span class="like-count"><%= post.likes.length %></span>
+                  <i class="<%= post.likes && post.likes.includes(user._id) ? 'fas' : 'far' %> fa-heart"></i>
+                  <span class="like-count"><%= post.likes ? post.likes.length : 0 %></span>
                 </button>
                 
                 <button class="comment-btn" data-post-id="<%= post._id %>">
                   <i class="far fa-comment"></i>
-                  <span class="comment-count"><%= post.comments.length %></span>
+                  <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
                 </button>
               </div>
 

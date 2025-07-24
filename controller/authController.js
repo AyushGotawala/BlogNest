@@ -148,7 +148,7 @@ const postLogin = [
         
         const user = await User.findOne({username : username});
         if(!user){
-            return res.status(422).render('users/Login',{
+            return res.status(401).render('users/Login',{
                 title:'Login',
                 errorMessage : ['username not Found!,invalid credentials'],
                 oldOutput : {username,password}

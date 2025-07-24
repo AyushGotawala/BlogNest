@@ -8,10 +8,8 @@ const MongoDBStore = require("connect-mongodb-session")(session);
 const multer = require("multer");
 const fs = require("fs");
 
-// MongoDB connection URI
 const db_path = "mongodb://localhost:27017/BlogNest";
 
-// EJS settings
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
@@ -46,8 +44,6 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage });
 
-// ✅ Middleware Setup Order Matters
-
 // Serve static files FIRST
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -70,7 +66,7 @@ app.use(session({
 // Routers that don't require login
 app.use(authRouter);
 
-// ✅ Apply login check middleware only to protected routes
+// Apply login check middleware only to protected routes
 app.use((req, res, next) => {
     if (req.session.isLoggedIn) {
         next();
@@ -87,7 +83,7 @@ app.use(blogRouter);
 app.use(errors);
 
 // Start the server
-const dn = '192.168.0.117';
+const dn = '192.0.0.2';
 
 mongoose.connect(db_path).then(() => {
     app.listen(port, '0.0.0.0', () => {
