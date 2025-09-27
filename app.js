@@ -1,14 +1,16 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const port = 3000;
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const multer = require("multer");
 const fs = require("fs");
+const dotenv = require('dotenv');
+dotenv.config();
 
-const db_path = "mongodb://localhost:27017/BlogNest";
+const port = process.env.PORT || 3100;
+const db_path = process.env.MONGO_URI || "mongodb://localhost:27017/BlogNest";
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
