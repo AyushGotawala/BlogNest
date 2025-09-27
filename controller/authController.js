@@ -1,12 +1,12 @@
 const { check, validationResult } = require("express-validator");
 const bcrypt = require('bcrypt');
-const User = require("../models/user");
+const User = require("../models/User");
 
 const getLogin = (req,res,next) =>{
     try{
         req.session.isLoggedIn = false;
         req.session.user = null;
-        
+
         res.status(200).render('users/Login',{title:'login'});
     }catch(error){
         res.status(500).json({msg : error.message});

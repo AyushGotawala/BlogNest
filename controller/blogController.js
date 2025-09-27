@@ -1,4 +1,5 @@
-const Post = require('../models/Post');const user = require('../models/user');
+const Post = require('../models/Post');
+const user = require('../models/User');
 const mongoose = require('mongoose');
 
 const getCreateBlog = (req,res,next) =>{
